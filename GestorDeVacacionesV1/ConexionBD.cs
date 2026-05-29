@@ -68,5 +68,41 @@ namespace GestorDeVacacionesV1
                     "Base de datos y tabla creadas");
             }
         }
+        public void CrearAdmin()
+        {
+            using (SQLiteConnection db =
+                new SQLiteConnection(conexion))
+            {
+                db.Open();
+                string sql = "INSERT OR IGNORE INTO Usuarios "
+                    + "(Id, NombreUsuario, Contrasena, Rol, EmpleadoId)"
+                    + "VALUES (1,'Admin','Admin123','Admin',null)";
+                SQLiteCommand comando =
+                new SQLiteCommand(sql, db);
+                comando.ExecuteNonQuery();
+            }
+        }
+        //CREAMOS EL LOGIN
+        public string Login(string nombreUsuario, string contrasena)
+        {
+            using (SQLiteConnection db = new SQLiteConnection(conexion))
+            {  
+                db.Open();
+                string sql = "SELECT Rol FROM Usuarios"
+                    + "WHERE NombreUsuario = @usuario AND Contrasena = @contrasena";
+                SQLiteCommand comando = new SQLiteCommand(sql, db);
+                comando.Parameters.AddWithValue("@usuario", nombreUsuario);
+                comando.Parameters.AddWithValue("@contrasena", contrasena);
+                SQLiteDataReader lector = comando.ExecuteReader();
+                if(lector.Read())
+                {
+                    return lector["Rol"].ToString();
+                }
+                else
+                {
+                    return null;
+                }
+            }    
+        }
     }
 }
