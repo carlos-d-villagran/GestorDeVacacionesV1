@@ -7,7 +7,7 @@ using System.Data.SQLite;
 
 namespace GestorDeVacacionesV1
 {
-    internal class Empleado
+    class Empleado
     {
         private string conexion = "Data Source=GestorVacaciones.db";
         public void Agregar(string nombre, string fechaIngreso, string puesto, string telefono, string correo, int diasDisponibles)
@@ -74,6 +74,63 @@ namespace GestorDeVacacionesV1
                 }
                 if(!hayEmpleado)
                     Console.WriteLine("\nNo hay empleados...");
+            }
+        }
+        public bool BuscarPorId(int id)
+        {
+            using (SQLiteConnection db = new SQLiteConnection(conexion))
+            {
+                db.Open();
+                string sql = "SELECT *FROM Empleados WHERE Id = @id";
+                SQLiteCommand comando = new SQLiteCommand (sql, db);
+                comando.Parameters.AddWithValue("@id", id);
+                SQLiteDataReader lector = comando.ExecuteReader();
+                if(lector.Read())
+                { Console.WriteLine("Id: " + lector[id]);
+                  Console.WriteLine("Nombre: " + lector["Nombre"]);
+                  Console.WriteLine("Fecha de Ingreso: " + lector["FechaIngreso"]);
+                  Console.WriteLine("Puesto: " + lector["Puesto"]);
+                  Console.WriteLine("Teléfono: " + lector["Telefono"]);
+                  Console.WriteLine("Correo: " + lector["Correo"]);
+                  Console.WriteLine("Días disponibles: " + lector["DiasDisponibles"]);
+                    return true;
+                }
+                else
+                {
+                    Console.WriteLine("Empleado no encontrado...");
+                    return false;
+                }
+            }
+        }
+        public int ObtenerDiasDisponibles(int empleadoId)
+        {
+            using (SQLiteConnection db = new SQLiteConnection(conexion))
+            {
+                db.Open();
+                string sql = "SELECT DiasDisponibles FROM Empleados WHERE Id = @id";
+                SQLiteCommand comando = new SQLiteCommand (sql, db);
+                comando.Parameters.AddWithValue ("@id", empleadoId);
+                object resultado = comando.ExecuteScalar();
+                if(resultado!= null)
+                {
+                    return Convert.ToInt32(resultado);
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+        }
+        public void DescontarDias(int empleadoId, int diasADescontar)
+        {
+            using (SQLiteConnection db = new SQLiteConnection(conexion))
+            {
+                db.Open();
+                string sql = "UPDATE Empleados SET DiasDisponibles = DiasDisponibles - @dias WHERE Id = @id";
+                SQLiteCommand comando = new SQLiteCommand(sql, db);
+                comando.Parameters.AddWithValue("@dias", diasADescontar);
+                comando.Parameters.AddWithValue("@id", empleadoId);
+                comando.ExecuteNonQuery();
             }
         }
     }
