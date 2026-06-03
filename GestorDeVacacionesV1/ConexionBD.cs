@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data.SQLite;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace GestorDeVacacionesV1
 {
@@ -103,6 +104,43 @@ namespace GestorDeVacacionesV1
                     return null;
                 }
             }    
+        }
+        public int ObtenerEmpleadoId(string nombreUsuario, string contrasena)
+        {
+            using (SQLiteConnection db =
+                new SQLiteConnection(conexion))
+            {
+                db.Open();
+                string sql = "SELECT EmpleadoId FROM Usuarios WHERE NombreUsuario = @usuario AND Contrasena = @contrasena";
+                SQLiteCommand comando = new SQLiteCommand(sql, db);
+                comando.Parameters.AddWithValue("@usuario", nombreUsuario);
+                comando.Parameters.AddWithValue("@contrasena", contrasena);
+                object resultado = comando.ExecuteScalar();
+                if(resultado != null && resultado != DBNull.Value)
+                {
+                    return Convert.ToInt32(resultado);
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+        }
+        public void CrearUsuarioEmpleado(int empleadoId, string nombreUsuario, string contrasena)
+        {
+            using (SQLiteConnection db =
+                new SQLiteConnection(conexion))
+            {
+                db.Open();
+                string sql = "INSERT INTO Usuarios(NombreUsuario, Contrasena, Rol, EmpleadoId) " +
+                    "VALUES(@usuario, @contrasena, 'Empleado', @empleadoId)";
+                SQLiteCommand comando = new SQLiteCommand (sql, db);
+                comando.Parameters.AddWithValue("@usuario", nombreUsuario);
+                comando.Parameters.AddWithValue("@contrasena", contrasena);
+                comando.Parameters.AddWithValue("@empleadoId", empleadoId);
+                comando.ExecuteNonQuery();
+                Console.WriteLine("Usuario empleado creado correctamente...");
+            }
         }
     }
 }

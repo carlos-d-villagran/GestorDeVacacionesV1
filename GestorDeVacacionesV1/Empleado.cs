@@ -133,5 +133,22 @@ namespace GestorDeVacacionesV1
                 comando.ExecuteNonQuery();
             }
         }
+        public void ReporteDiasDisponibles()
+        {
+            using (SQLiteConnection db = new SQLiteConnection(conexion))
+            {
+                db.Open();
+                string sql = "SELECT Nombre, Puesto, DiasDisponibles FROM Empleados ORDER BY Nombre";
+                SQLiteCommand comando = new SQLiteCommand(sql, db);
+                SQLiteDataReader lector = comando.ExecuteReader();
+                Console.WriteLine("REPORTE DÍAS DISPONIBLES: \n");
+                while(lector.Read())
+                {
+                    Console.WriteLine("Nombre: "+ lector["Nombre"]);
+                    Console.WriteLine("Puesto: "+ lector["Puesto"]);
+                    Console.WriteLine("Dias disponibles: "+ lector["DiasDisponibles"]);
+                }
+            }
+        }
     }
 }
