@@ -26,7 +26,7 @@ namespace GestorDeVacacionesV1
                 FechaIngreso TEXT NOT NULL,
                 Puesto TEXT NOT NULL,
                 Telefono TEXT NOT NULL,
-                Correo TEXT NOT NULL,
+                Correo TEXT,
                 DiasDisponibles INTEGER NOT NULL
             
              );
