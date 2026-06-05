@@ -78,6 +78,7 @@ namespace GestorDeVacacionesV1
             bool salir = false;
             while(!salir)
             {
+                Console.Clear();
                 Console.WriteLine("***Menú Administrador***\n");
                 Console.WriteLine("1. Gestión de empleados");
                 Console.WriteLine("2. Gestión de usuario");
@@ -114,6 +115,7 @@ namespace GestorDeVacacionesV1
             bool salir = false;
             while (!salir)
             {
+                Console.Clear();
                 Console.WriteLine("***Menú Empleados***\n");
                 Console.WriteLine("1. Registrar empleado");
                 Console.WriteLine("2. Modificar empleado");
@@ -207,7 +209,7 @@ namespace GestorDeVacacionesV1
             int dias = 0;
             while(dias<=0)
             {
-                Console.WriteLine("Días de vacaciones disponibles: \n");
+                Console.Write("Días de vacaciones disponibles: \n");
                 if(!int.TryParse(Console.ReadLine(), out dias) || dias<=0)
                 {
                     Console.WriteLine("Error, ingrese un número válido");
@@ -219,7 +221,7 @@ namespace GestorDeVacacionesV1
         static void ModificarEmpleado(Empleado empleado)
         {
             Console.Clear();
-            Console.WriteLine("***Modificar empleado***");
+            Console.WriteLine("***Modificar empleado***\n");
             empleado.MostrarEmpleados();
             Console.Write("Ingrese el Id del empleado a modificar: ");
             int id;
