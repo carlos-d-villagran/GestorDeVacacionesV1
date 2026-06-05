@@ -11,7 +11,7 @@ namespace GestorDeVacacionesV1
     class ConexionBD
     {
         // CONEXION Y CREACION DE LA BASE DE DATOS
-        private string conexion = "Data Source=GestorVacaciones.db";
+        private string conexion = "Data Source=GestorVacaciones.db;Version=3;BusyTimeout=5000;";
         public void IniciarBD()
         {
             using (SQLiteConnection db =
@@ -30,7 +30,7 @@ namespace GestorDeVacacionesV1
                 DiasDisponibles INTEGER NOT NULL
             
              );
-             CREATE TABLE IF NOT EXIST Usuarios(
+             CREATE TABLE IF NOT EXISTS Usuarios(
                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
                 NombreUsuario TEXT NOT NULL,
                 Contrasena TEXT NOT NULL,
@@ -38,32 +38,32 @@ namespace GestorDeVacacionesV1
                 EmpleadoId INTEGER,
                 FOREIGN KEY (EmpleadoId) REFERENCES Empleados(Id)
              );
-             CREATE TABLE IF NOT EXIST SolicitudesVacaciones(
+             CREATE TABLE IF NOT EXISTS SolicitudesVacaciones(
                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
                 EmpleadoId INTEGER NOT NULL,
                 DiasSolicitados INTEGER NOT NULL,
                 Estado TEXT NOT NULL,
                 Motivo TEXT,
-                FechasSolicitud TEXT NOT NULL,
+                FechaSolicitud TEXT NOT NULL,
                 ComentarioAdmin TEXT,
                 FOREIGN KEY (EmpleadoId) REFERENCES Empleados(Id)
              );
-             CREATE TABLE IF NOT EXIST DetalleDiaSolicitud(
+             CREATE TABLE IF NOT EXISTS DetalleDiasSolicitud(
                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                SolicitudID INTEGER NOT NULL,
+                SolicitudId INTEGER NOT NULL,
                 Fecha TEXT NOT NULL,
-                FOREIGN KEY (SolicitudID) REFERENCES SolicitudesVacaciones(Id)
+                FOREIGN KEY (SolicitudId) REFERENCES SolicitudesVacaciones(Id)
              );
-             CREATE TABLE IF NOT EXIST Asuetos(
+             CREATE TABLE IF NOT EXISTS Asuetos(
                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
                 Nombre TEXT NOT NULL,
                 Fecha TEXT NOT NULL,
                 Descripcion TEXT
              );";
-                SQLiteCommand comando =
-                new SQLiteCommand(sql, db);
-
-                comando.ExecuteNonQuery();
+                using (SQLiteCommand comando = new SQLiteCommand(sql, db))
+                {
+                    comando.ExecuteNonQuery();
+                }
 
                 Console.WriteLine(
                     "Base de datos y tabla creadas");
@@ -76,11 +76,12 @@ namespace GestorDeVacacionesV1
             {
                 db.Open();
                 string sql = "INSERT OR IGNORE INTO Usuarios "
-                    + "(Id, NombreUsuario, Contrasena, Rol, EmpleadoId)"
+                    + "(Id, NombreUsuario, Contrasena, Rol, EmpleadoId) "
                     + "VALUES (1,'Admin','Admin123','Admin',null)";
-                SQLiteCommand comando =
-                new SQLiteCommand(sql, db);
-                comando.ExecuteNonQuery();
+                using (SQLiteCommand comando = new SQLiteCommand(sql, db))
+                {
+                    comando.ExecuteNonQuery();
+                }
             }
         }
         //CREAMOS EL LOGIN
@@ -89,19 +90,23 @@ namespace GestorDeVacacionesV1
             using (SQLiteConnection db = new SQLiteConnection(conexion))
             {  
                 db.Open();
-                string sql = "SELECT Rol FROM Usuarios"
+                string sql = "SELECT Rol FROM Usuarios "
                     + "WHERE NombreUsuario = @usuario AND Contrasena = @contrasena";
-                SQLiteCommand comando = new SQLiteCommand(sql, db);
-                comando.Parameters.AddWithValue("@usuario", nombreUsuario);
-                comando.Parameters.AddWithValue("@contrasena", contrasena);
-                SQLiteDataReader lector = comando.ExecuteReader();
-                if(lector.Read())
+                using (SQLiteCommand comando = new SQLiteCommand(sql, db))
                 {
-                    return lector["Rol"].ToString();
-                }
-                else
-                {
-                    return null;
+                    comando.Parameters.AddWithValue("@usuario", nombreUsuario);
+                    comando.Parameters.AddWithValue("@contrasena", contrasena);
+                    using (SQLiteDataReader lector = comando.ExecuteReader())
+                    {
+                        if(lector.Read())
+                        {
+                            return lector["Rol"].ToString();
+                        }
+                        else
+                        {
+                            return null;
+                        }
+                    }
                 }
             }    
         }
@@ -112,10 +117,13 @@ namespace GestorDeVacacionesV1
             {
                 db.Open();
                 string sql = "SELECT EmpleadoId FROM Usuarios WHERE NombreUsuario = @usuario AND Contrasena = @contrasena";
-                SQLiteCommand comando = new SQLiteCommand(sql, db);
-                comando.Parameters.AddWithValue("@usuario", nombreUsuario);
-                comando.Parameters.AddWithValue("@contrasena", contrasena);
-                object resultado = comando.ExecuteScalar();
+                object resultado;
+                using (SQLiteCommand comando = new SQLiteCommand(sql, db))
+                {
+                    comando.Parameters.AddWithValue("@usuario", nombreUsuario);
+                    comando.Parameters.AddWithValue("@contrasena", contrasena);
+                    resultado = comando.ExecuteScalar();
+                }
                 if(resultado != null && resultado != DBNull.Value)
                 {
                     return Convert.ToInt32(resultado);
@@ -134,11 +142,13 @@ namespace GestorDeVacacionesV1
                 db.Open();
                 string sql = "INSERT INTO Usuarios(NombreUsuario, Contrasena, Rol, EmpleadoId) " +
                     "VALUES(@usuario, @contrasena, 'Empleado', @empleadoId)";
-                SQLiteCommand comando = new SQLiteCommand (sql, db);
-                comando.Parameters.AddWithValue("@usuario", nombreUsuario);
-                comando.Parameters.AddWithValue("@contrasena", contrasena);
-                comando.Parameters.AddWithValue("@empleadoId", empleadoId);
-                comando.ExecuteNonQuery();
+                using (SQLiteCommand comando = new SQLiteCommand (sql, db))
+                {
+                    comando.Parameters.AddWithValue("@usuario", nombreUsuario);
+                    comando.Parameters.AddWithValue("@contrasena", contrasena);
+                    comando.Parameters.AddWithValue("@empleadoId", empleadoId);
+                    comando.ExecuteNonQuery();
+                }
                 Console.WriteLine("Usuario empleado creado correctamente...");
             }
         }

@@ -9,23 +9,25 @@ namespace GestorDeVacacionesV1
 {
     class Empleado
     {
-        private string conexion = "Data Source=GestorVacaciones.db";
+        private string conexion = "Data Source=GestorVacaciones.db;Version=3;BusyTimeout=5000;";
         public void Agregar(string nombre, string fechaIngreso, string puesto, string telefono, string correo, int diasDisponibles)
         {
             using (SQLiteConnection db = new SQLiteConnection(conexion))
             {
                 db.Open();
-                string sql = "INSERT INTO TABLE Empleados" +
-                    "(Nombre, FechaIngreso, Puesto, Telefono, Correo, DiasDisponibles)"
-                    + "VALUES (@nombre, @fechaIngreso,@puesto,@telefono,@correo,@diasDisponibles)";
-                SQLiteCommand comando = new SQLiteCommand(sql, db);
-                comando.Parameters.AddWithValue("@nombre", nombre);
-                comando.Parameters.AddWithValue("@fechaIngreso", fechaIngreso);
-                comando.Parameters.AddWithValue("@puesto", puesto);
-                comando.Parameters.AddWithValue("@telefono", telefono);
-                comando.Parameters.AddWithValue("@correo", correo);
-                comando.Parameters.AddWithValue("@diasDisponibles", diasDisponibles);
-                comando.ExecuteNonQuery();
+                string sql = "INSERT INTO Empleados "
+                    + "(Nombre, FechaIngreso, Puesto, Telefono, Correo, DiasDisponibles) "
+                    + "VALUES (@nombre, @fechaIngreso, @puesto, @telefono, @correo, @diasDisponibles)";
+                using (SQLiteCommand comando = new SQLiteCommand(sql, db))
+                {
+                    comando.Parameters.AddWithValue("@nombre", nombre);
+                    comando.Parameters.AddWithValue("@fechaIngreso", fechaIngreso);
+                    comando.Parameters.AddWithValue("@puesto", puesto);
+                    comando.Parameters.AddWithValue("@telefono", telefono);
+                    comando.Parameters.AddWithValue("@correo", correo);
+                    comando.Parameters.AddWithValue("@diasDisponibles", diasDisponibles);
+                    comando.ExecuteNonQuery();
+                }
                 Console.WriteLine("Empleado registrado correctamente...");
 
             }
@@ -37,14 +39,17 @@ namespace GestorDeVacacionesV1
                 db.Open();
                 string sql = "UPDATE Empleados SET " +
                     "Nombre = @nombre, FechaIngreso = @fechaIngreso, Puesto= @puesto, Telefono = @telefono, Correo = @correo WHERE Id = @id";
-                SQLiteCommand comando = new SQLiteCommand(sql, db);
-                comando.Parameters.AddWithValue("@nombre", nombre);
-                comando.Parameters.AddWithValue("@fechaIngreso", fechaIngreso);
-                comando.Parameters.AddWithValue("@puesto", puesto);
-                comando.Parameters.AddWithValue("@telefono", telefono);
-                comando.Parameters.AddWithValue("@correo", correo);
-                comando.Parameters.AddWithValue("@Id", id);
-                int filas = comando.ExecuteNonQuery();
+                int filas;
+                using (SQLiteCommand comando = new SQLiteCommand(sql, db))
+                {
+                    comando.Parameters.AddWithValue("@nombre", nombre);
+                    comando.Parameters.AddWithValue("@fechaIngreso", fechaIngreso);
+                    comando.Parameters.AddWithValue("@puesto", puesto);
+                    comando.Parameters.AddWithValue("@telefono", telefono);
+                    comando.Parameters.AddWithValue("@correo", correo);
+                    comando.Parameters.AddWithValue("@id", id);
+                    filas = comando.ExecuteNonQuery();
+                }
                 if(filas > 0)
                  Console.WriteLine("Empleado modificado correctamente...");
                 else
@@ -56,24 +61,26 @@ namespace GestorDeVacacionesV1
             using (SQLiteConnection db = new SQLiteConnection(conexion))
             {
                 db.Open();
-                string sql = "SELECT *FROM Empleados";
-                SQLiteCommand comando = new SQLiteCommand(sql, db);
-                SQLiteDataReader lector = comando.ExecuteReader();
-                Console.WriteLine("+++ Lista de empleados +++\n");
-                bool hayEmpleado = false;
-                while (lector.Read())
+                string sql = "SELECT * FROM Empleados";
+                using (SQLiteCommand comando = new SQLiteCommand(sql, db))
+                using (SQLiteDataReader lector = comando.ExecuteReader())
                 {
-                    hayEmpleado = true;
-                    Console.WriteLine("Id: " + lector["Id"]);
-                    Console.WriteLine("Nombre: " + lector["Nombre"]);
-                    Console.WriteLine("Fecha de Ingreso: " + lector["FechaIngreso"]);
-                    Console.WriteLine("Puesto: " + lector["Puesto"]);
-                    Console.WriteLine("Teléfono: " + lector["Telefono"]);
-                    Console.WriteLine("Correo: " + lector["Correo"]);
-                    Console.WriteLine("Días disponibles: " + lector["DiasDisponibles"]);
+                    Console.WriteLine("+++ Lista de empleados +++\n");
+                    bool hayEmpleado = false;
+                    while (lector.Read())
+                    {
+                        hayEmpleado = true;
+                        Console.WriteLine("Id: " + lector["Id"]);
+                        Console.WriteLine("Nombre: " + lector["Nombre"]);
+                        Console.WriteLine("Fecha de Ingreso: " + lector["FechaIngreso"]);
+                        Console.WriteLine("Puesto: " + lector["Puesto"]);
+                        Console.WriteLine("Teléfono: " + lector["Telefono"]);
+                        Console.WriteLine("Correo: " + lector["Correo"]);
+                        Console.WriteLine("Días disponibles: " + lector["DiasDisponibles"]);
+                    }
+                    if(!hayEmpleado)
+                        Console.WriteLine("\nNo hay empleados...");
                 }
-                if(!hayEmpleado)
-                    Console.WriteLine("\nNo hay empleados...");
             }
         }
         public bool BuscarPorId(int id)
@@ -81,24 +88,28 @@ namespace GestorDeVacacionesV1
             using (SQLiteConnection db = new SQLiteConnection(conexion))
             {
                 db.Open();
-                string sql = "SELECT *FROM Empleados WHERE Id = @id";
-                SQLiteCommand comando = new SQLiteCommand (sql, db);
-                comando.Parameters.AddWithValue("@id", id);
-                SQLiteDataReader lector = comando.ExecuteReader();
-                if(lector.Read())
-                { Console.WriteLine("Id: " + lector[id]);
-                  Console.WriteLine("Nombre: " + lector["Nombre"]);
-                  Console.WriteLine("Fecha de Ingreso: " + lector["FechaIngreso"]);
-                  Console.WriteLine("Puesto: " + lector["Puesto"]);
-                  Console.WriteLine("Teléfono: " + lector["Telefono"]);
-                  Console.WriteLine("Correo: " + lector["Correo"]);
-                  Console.WriteLine("Días disponibles: " + lector["DiasDisponibles"]);
-                    return true;
-                }
-                else
+                string sql = "SELECT * FROM Empleados WHERE Id = @id";
+                using (SQLiteCommand comando = new SQLiteCommand (sql, db))
                 {
-                    Console.WriteLine("Empleado no encontrado...");
-                    return false;
+                    comando.Parameters.AddWithValue("@id", id);
+                    using (SQLiteDataReader lector = comando.ExecuteReader())
+                    {
+                        if(lector.Read())
+                        { Console.WriteLine("Id: " + lector["Id"]);
+                          Console.WriteLine("Nombre: " + lector["Nombre"]);
+                          Console.WriteLine("Fecha de Ingreso: " + lector["FechaIngreso"]);
+                          Console.WriteLine("Puesto: " + lector["Puesto"]);
+                          Console.WriteLine("Teléfono: " + lector["Telefono"]);
+                          Console.WriteLine("Correo: " + lector["Correo"]);
+                          Console.WriteLine("Días disponibles: " + lector["DiasDisponibles"]);
+                            return true;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Empleado no encontrado...");
+                            return false;
+                        }
+                    }
                 }
             }
         }
@@ -108,9 +119,12 @@ namespace GestorDeVacacionesV1
             {
                 db.Open();
                 string sql = "SELECT DiasDisponibles FROM Empleados WHERE Id = @id";
-                SQLiteCommand comando = new SQLiteCommand (sql, db);
-                comando.Parameters.AddWithValue ("@id", empleadoId);
-                object resultado = comando.ExecuteScalar();
+                object resultado;
+                using (SQLiteCommand comando = new SQLiteCommand (sql, db))
+                {
+                    comando.Parameters.AddWithValue ("@id", empleadoId);
+                    resultado = comando.ExecuteScalar();
+                }
                 if(resultado!= null)
                 {
                     return Convert.ToInt32(resultado);
@@ -127,10 +141,12 @@ namespace GestorDeVacacionesV1
             {
                 db.Open();
                 string sql = "UPDATE Empleados SET DiasDisponibles = DiasDisponibles - @dias WHERE Id = @id";
-                SQLiteCommand comando = new SQLiteCommand(sql, db);
-                comando.Parameters.AddWithValue("@dias", diasADescontar);
-                comando.Parameters.AddWithValue("@id", empleadoId);
-                comando.ExecuteNonQuery();
+                using (SQLiteCommand comando = new SQLiteCommand(sql, db))
+                {
+                    comando.Parameters.AddWithValue("@dias", diasADescontar);
+                    comando.Parameters.AddWithValue("@id", empleadoId);
+                    comando.ExecuteNonQuery();
+                }
             }
         }
         public void ReporteDiasDisponibles()
@@ -139,14 +155,16 @@ namespace GestorDeVacacionesV1
             {
                 db.Open();
                 string sql = "SELECT Nombre, Puesto, DiasDisponibles FROM Empleados ORDER BY Nombre";
-                SQLiteCommand comando = new SQLiteCommand(sql, db);
-                SQLiteDataReader lector = comando.ExecuteReader();
-                Console.WriteLine("REPORTE DÍAS DISPONIBLES: \n");
-                while(lector.Read())
+                using (SQLiteCommand comando = new SQLiteCommand(sql, db))
+                using (SQLiteDataReader lector = comando.ExecuteReader())
                 {
-                    Console.WriteLine("Nombre: "+ lector["Nombre"]);
-                    Console.WriteLine("Puesto: "+ lector["Puesto"]);
-                    Console.WriteLine("Dias disponibles: "+ lector["DiasDisponibles"]);
+                    Console.WriteLine("REPORTE DÍAS DISPONIBLES: \n");
+                    while(lector.Read())
+                    {
+                        Console.WriteLine("Nombre: "+ lector["Nombre"]);
+                        Console.WriteLine("Puesto: "+ lector["Puesto"]);
+                        Console.WriteLine("Dias disponibles: "+ lector["DiasDisponibles"]);
+                    }
                 }
             }
         }

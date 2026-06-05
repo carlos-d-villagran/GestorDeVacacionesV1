@@ -174,7 +174,7 @@ namespace GestorDeVacacionesV1
                 DateTime fecha;
                 if(DateTime.TryParse(entrada, out fecha))
                 {
-                    fechaIngreso = fecha.ToString("yyyy-mm-dd");
+                    fechaIngreso = fecha.ToString("yyyy-MM-dd");
                 }
                 else
                 {
@@ -196,11 +196,12 @@ namespace GestorDeVacacionesV1
             {
                 Console.Write("Teléfono: \n");
                 telefono = Console.ReadLine();
-                if (puesto.Trim() == "" || telefono.Length != 8 || !telefono.All(char.IsDigit))
+                if (telefono.Trim() == "" || telefono.Length != 8 || !telefono.All(char.IsDigit))
                 {
                     Console.WriteLine("Error, el teléfono debe tener 8 dígitos y solo contener números");
                 }
             }
+            Console.Write("Correo: \n");
             string correo = Console.ReadLine();
             
             int dias = 0;
@@ -250,7 +251,7 @@ namespace GestorDeVacacionesV1
                 DateTime fecha;
                 if (DateTime.TryParse(entrada, out fecha))
                 {
-                    fechaIngreso = fecha.ToString("yyyy-mm-dd");
+                    fechaIngreso = fecha.ToString("yyyy-MM-dd");
                 }
                 else
                 {
@@ -272,11 +273,12 @@ namespace GestorDeVacacionesV1
             {
                 Console.Write("Nuevo teléfono: \n");
                 telefono = Console.ReadLine();
-                if (puesto.Trim() == "" || telefono.Length != 8 || !telefono.All(char.IsDigit))
+                if (telefono.Trim() == "" || telefono.Length != 8 || !telefono.All(char.IsDigit))
                 {
                     Console.WriteLine("Error, el teléfono debe tener 8 dígitos y solo contener números");
                 }
             }
+            Console.Write("Nuevo correo: \n");
             string correo = Console.ReadLine();
             empleado.Modificar(nombre, fechaIngreso, puesto, telefono, correo, id);
             Console.ReadKey();
@@ -332,7 +334,7 @@ namespace GestorDeVacacionesV1
                 Console.WriteLine("4. Ver historial de un empleado");
                 Console.WriteLine("0. Volver");
                 Console.Write("\nSeleccione una opcion: ");
-                if(!int.TryParse(Console.ReadLine(), out int opcion))
+                if(int.TryParse(Console.ReadLine(), out int opcion))
                 {
                     switch(opcion)
                     {
@@ -400,7 +402,7 @@ namespace GestorDeVacacionesV1
                 Console.WriteLine("3. Eliminar Asueto");
                 Console.WriteLine("0. Regresar");
                 Console.Write("\nSeleccione una opción: ");
-                if(!int.TryParse(Console.ReadLine(), out int opcion))
+                if(int.TryParse(Console.ReadLine(), out int opcion))
                 {
                     switch (opcion)
                     {
@@ -424,7 +426,7 @@ namespace GestorDeVacacionesV1
                                 DateTime fecha;
                                 if (DateTime.TryParse(entrada, out fecha))
                                 {
-                                    fechaAsueto = fecha.ToString("yyyy-mm-dd");
+                                    fechaAsueto = fecha.ToString("yyyy-MM-dd");
                                 }
                                 else
                                 {
@@ -478,7 +480,7 @@ namespace GestorDeVacacionesV1
                 Console.WriteLine("4. Ver asuetos del año");
                 Console.WriteLine("0. Salir");
                 Console.Write("\nSeleccione una opción: ");
-                if(!int.TryParse(Console.ReadLine(), out int opcion))
+                if(int.TryParse(Console.ReadLine(), out int opcion))
                 {
                     switch (opcion)
                     {
@@ -510,13 +512,13 @@ namespace GestorDeVacacionesV1
                 return;
             }
             Console.WriteLine("Ingresa las fechas que deseas solicitar");
-            Console.WriteLine("Formato: yyyy-mm-dd\nEscribe 'fin' para terminar");
+            Console.WriteLine("Formato: yyyy-MM-dd\nEscribe 'fin' para terminar");
             List<string> diasSeleccionados = new List<string>();
             while(true)
             {
-                Console.Write("Fecha: " + (diasSeleccionados.Count+1));
+                Console.Write("Fecha " + (diasSeleccionados.Count+1) + ": ");
                 string entrada = Console.ReadLine().Trim();
-                if(entrada.ToUpper()=="fin")
+                if(entrada.Equals("fin", StringComparison.OrdinalIgnoreCase))
                 {
                     if(diasSeleccionados.Count == 0)
                     {
@@ -531,7 +533,7 @@ namespace GestorDeVacacionesV1
                     Console.WriteLine("Formato fecha inválida");
                     continue;
                 }
-                string fechaSTR = fecha.ToString("yyyy-mm-dd");
+                string fechaSTR = fecha.ToString("yyyy-MM-dd");
                 if(fecha.Date < DateTime.Today)
                 {
                     Console.WriteLine("No puedes solicitar una fecha pasada");
@@ -575,8 +577,8 @@ namespace GestorDeVacacionesV1
             Console.Write("\nMotivo (opcional): ");
             string motivo = Console.ReadLine();
             Console.Write("Confirmar solicitud (s/n): ");
-            string confirmar = Console.ReadLine().ToUpper();
-            if(confirmar=="s")
+            string confirmar = Console.ReadLine().Trim();
+            if(confirmar.Equals("s", StringComparison.OrdinalIgnoreCase))
             {
                 solicitud.CrearSolicitud(EmpleadoIdActual, diasSeleccionados, motivo);
             }
