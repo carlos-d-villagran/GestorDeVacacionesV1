@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data.SQLite;
 using System.Data;
+using Microsoft.SqlServer.Server;
 
 
 namespace GestorDeVacacionesV1
@@ -288,15 +289,13 @@ namespace GestorDeVacacionesV1
             emp.MostrarEmpleados();
             Console.Write("Id del empleado para crear usuario: ");
             int empId;
-            while (!int.TryParse(Console.ReadLine(), out empId))
+            if (!int.TryParse(Console.ReadLine(), out empId))
             {
-                Console.Write("Error, vuelva a intentarlo: ");
-            }
-            if (!emp.BuscarPorId(empId))
-            {
+                Console.WriteLine("Error en el ID");
                 Console.ReadKey();
                 return;
             }
+            
             string usuario = "";
             while(usuario.Trim() == "")
             {
@@ -354,8 +353,32 @@ namespace GestorDeVacacionesV1
                             solicitud.Aprobar(idAprobar, comentario, empleado);
                             Console.ReadKey();
                             break;
-                            case 3 : Console.WriteLine(); break;
-                        case 4: Console.WriteLine(); break;
+                            case 3 : solicitud.VerPendiente();
+                            Console.Write("Id de solicitud a rechazar: ");
+                            int idRechazar;
+                            if(!int.TryParse(Console.ReadLine(), out idRechazar))
+                            {
+                                Console.WriteLine("Error en el Id");
+                                Console.ReadKey();
+                                break;
+                            }
+                            Console.Write("\nMotinvo del rechazo: ");
+                            string comentarioRechazar = Console.ReadLine();
+                            solicitud.RechazarSolictud(idRechazar, comentarioRechazar);
+                            Console.ReadKey();
+                            break;
+                        case 4: empleado.MostrarEmpleados();
+                            Console.Write("Id de empleado: ");
+                            int idHistorial;
+                            if(!int.TryParse(Console.ReadLine(), out idHistorial))
+                            {
+                                Console.WriteLine("Id inválido");
+                                Console.ReadKey();
+                                break;
+                            }
+                            solicitud.VerHistorial(idHistorial);
+                            Console.ReadKey();
+                            break;
                         default: Console.WriteLine("Error, opción inválida"); Console.ReadKey(); break;
                     }
                 }
@@ -364,6 +387,204 @@ namespace GestorDeVacacionesV1
                     Console.WriteLine("Error, dato inválido");
                 }
             }
+        }
+        static void MenuAsuetos(Asueto asueto)
+        {
+            bool salir = false;
+            while(!salir)
+            {
+                Console.Clear();
+                Console.WriteLine("***Menú Asuetos***");
+                Console.WriteLine("1. Agregar asueto");
+                Console.WriteLine("2. Listar asuetos");
+                Console.WriteLine("3. Eliminar Asueto");
+                Console.WriteLine("0. Regresar");
+                Console.Write("\nSeleccione una opción: ");
+                if(!int.TryParse(Console.ReadLine(), out int opcion))
+                {
+                    switch (opcion)
+                    {
+                        case 0: salir = true; break;
+                        case 1: Console.Clear();
+                            string nombre = "";
+                            while (nombre.Trim() == "")
+                            {
+                                Console.Write("Nombre de asueto: ");
+                                nombre = Console.ReadLine();
+                                if (nombre.Trim() == "")
+                                {
+                                    Console.WriteLine("El nombre no puede estar vacío");
+                                }
+                            }
+                            string fechaAsueto = "";
+                            while (fechaAsueto.Trim() == "")
+                            {
+                                Console.Write("Nueva fecha de asueto (yyyy/mm/dd): ");
+                                string entrada = Console.ReadLine();
+                                DateTime fecha;
+                                if (DateTime.TryParse(entrada, out fecha))
+                                {
+                                    fechaAsueto = fecha.ToString("yyyy-mm-dd");
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Formato de fecha inválido...");
+                                }
+                            }
+                            Console.Write("Descripción (opcional): ");
+                            string descripcion = Console.ReadLine();
+                            asueto.Agregar(nombre, fechaAsueto, descripcion);
+                            Console.ReadKey();
+                            break;
+                        case 2: asueto.ListarTodos(); Console.ReadKey(); break;
+                        case 3: asueto.ListarTodos();
+                            Console.Write("\nId de asueto a eliminar: ");
+                            int idAsuetoElimar;
+                            if(!int.TryParse(Console.ReadLine(), out idAsuetoElimar))
+                            {
+                                Console.WriteLine("Id inválido");
+                                Console.ReadKey();
+                                break;
+                            }
+                            asueto.Eliminar(idAsuetoElimar);
+                            Console.ReadKey();
+                            break;
+                        default:
+                            Console.WriteLine("Opción no encontrada");
+                            Console.ReadKey();
+                            break;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("ERROR, Dato inválido");
+                    Console.ReadKey();
+                }
+            }
+        }
+        static void MenuEmpleado()
+        {
+            Empleado empleado = new Empleado();
+            Solicitud solicitud = new Solicitud();
+            Asueto asueto = new Asueto();
+            bool salir = false;
+            while(!salir)
+            {
+                Console.Clear();
+                Console.WriteLine("*** Menú Empleados ***");
+                Console.WriteLine("1. Ver mi información");
+                Console.WriteLine("2. Solicitar vacaciones");
+                Console.WriteLine("3. Ver mis solicitudes");
+                Console.WriteLine("4. Ver asuetos del año");
+                Console.WriteLine("0. Salir");
+                Console.Write("\nSeleccione una opción: ");
+                if(!int.TryParse(Console.ReadLine(), out int opcion))
+                {
+                    switch (opcion)
+                    {
+                        case 0: salir = true; break;
+                        case 1: empleado.BuscarPorId(EmpleadoIdActual); Console.ReadKey(); break;
+                            case 2: HacerSolicitud(solicitud, empleado); break;
+                            case 3: solicitud.VerHistorial(EmpleadoIdActual); Console.ReadKey(); break;
+                            case 4: asueto.ListarTodos(); Console.ReadKey(); break;
+                        default: Console.WriteLine("Opcion no encontrada"); Console.ReadKey(); break;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("ERROR, dato inválido");
+                    Console.ReadKey();
+                }
+            }
+        }
+        static void HacerSolicitud(Solicitud solicitud, Empleado empleado)
+        {
+            Console.Clear();
+            Console.WriteLine("Solicitar Vacaciones");
+            int diasDisponibles = empleado.ObtenerDiasDisponibles(EmpleadoIdActual);
+            Console.WriteLine("Dias disponibles: "+diasDisponibles);
+            if(diasDisponibles<=0)
+            {
+                Console.WriteLine("No tienes días disponibles");
+                Console.ReadKey();
+                return;
+            }
+            Console.WriteLine("Ingresa las fechas que deseas solicitar");
+            Console.WriteLine("Formato: yyyy-mm-dd\nEscribe 'fin' para terminar");
+            List<string> diasSeleccionados = new List<string>();
+            while(true)
+            {
+                Console.Write("Fecha: " + (diasSeleccionados.Count+1));
+                string entrada = Console.ReadLine().Trim();
+                if(entrada.ToUpper()=="fin")
+                {
+                    if(diasSeleccionados.Count == 0)
+                    {
+                        Console.WriteLine("Agregar al menos un día");
+                        continue;
+                    }
+                    break;
+                }
+                DateTime fecha;
+                if(!DateTime.TryParse(entrada, out fecha))
+                {
+                    Console.WriteLine("Formato fecha inválida");
+                    continue;
+                }
+                string fechaSTR = fecha.ToString("yyyy-mm-dd");
+                if(fecha.Date < DateTime.Today)
+                {
+                    Console.WriteLine("No puedes solicitar una fecha pasada");
+                    continue;
+                }
+                if(fecha.DayOfWeek == DayOfWeek.Sunday)
+                {
+                    Console.WriteLine("No puede solicitar un domingo");
+                    continue;
+                }
+                if(solicitud.EsAsueto(fechaSTR))
+                {
+                    Console.WriteLine("La fecha seleccionada es asueto");
+                    continue;
+                }
+                if(solicitud.FechaOcupada(fechaSTR, EmpleadoIdActual))
+                {
+                    Console.WriteLine("Esa fecha ya fue ocupada por otro empleado");
+                    continue;
+                }
+                if(diasSeleccionados.Contains(fechaSTR))
+                {
+                    Console.WriteLine("Ya agregaste esta fecha");
+                    continue;
+                }
+                if(diasSeleccionados.Count + 1 > diasDisponibles)
+                {
+                    Console.WriteLine($"No tienes los suficientes días\nDias disponibles: {diasDisponibles}");
+                    continue;
+                }
+                diasSeleccionados.Add(fechaSTR);
+                Console.WriteLine("fecha agregada correctamente...");
+            }
+            Console.WriteLine("Resumen de solicitud:");
+            Console.WriteLine("Dias seleccionados: " + diasSeleccionados.Count);
+            foreach(string d in diasSeleccionados)
+            {
+                Console.WriteLine("-> " + d);
+            }
+            Console.WriteLine("Dias que quedarán: " + (diasDisponibles-diasSeleccionados.Count));
+            Console.Write("\nMotivo (opcional): ");
+            string motivo = Console.ReadLine();
+            Console.Write("Confirmar solicitud (s/n): ");
+            string confirmar = Console.ReadLine().ToUpper();
+            if(confirmar=="s")
+            {
+                solicitud.CrearSolicitud(EmpleadoIdActual, diasSeleccionados, motivo);
+            }
+            else
+            {
+                Console.WriteLine("Solicitud cancelada");
+            }
+            Console.ReadKey();
         }
     }
 }
